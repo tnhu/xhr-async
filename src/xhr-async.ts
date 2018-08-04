@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosInterceptorManager, AxiosResponse, AxiosPromise } from 'axios'
+import * as proxymise from 'proxymise'
 
 /**
  * Key-Value object type.
@@ -35,6 +36,7 @@ export interface XhrResponse {
   response?: any
   error?: any
   request: XhrRequest
+  [key: string]: any
 }
 
 /**
@@ -237,6 +239,12 @@ function cleanupRetry(retry?: XhrRetryAfter|number, ignoreCounter: boolean = tru
   }
 }
 
+declare global {
+  interface Promise<T> {
+    as: (as: string) => T
+  }
+}
+
 async function get(url: string, options: XhrOptions = {}): Promise<XhrResponse> {
   let xhrResponse: XhrResponse
 
@@ -343,14 +351,24 @@ async function get(url: string, options: XhrOptions = {}): Promise<XhrResponse> 
 
   afterInterceptors.forEach(interceptor => interceptor(xhrResponse))
 
-  return xhrResponse
+  return new Proxy(xhrResponse, {
+    get: (target, name: string) => {
+      return name === 'as'
+        ? (as: string) => {
+            (xhrResponse as KVO)[as] = xhrResponse.response
+            delete xhrResponse.response
+            return xhrResponse
+          }
+        : (target as KVO)[name]
+    }
+  })
 }
 
 export function requestFor(method: string) {
-  return async (url: string, options: XhrOptions = {}): Promise<XhrResponse> => {
+  return proxymise(async (url: string, options: XhrOptions = {}): Promise<XhrResponse> => {
     options.method = method
     return get(url, options)
-  }
+  })
 }
 
 function abort(group: string) {
@@ -368,7 +386,7 @@ function abort(group: string) {
 }
 
 const xhr = {
-  get,
+  get: requestFor('GET'),
   post: requestFor('POST'),
   put: requestFor('PUT'),
   delete: requestFor('DELETE'),

@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var axios_1 = require("axios");
+var proxymise = require("proxymise");
 var beforeInterceptors = [];
 var afterInterceptors = [];
 var before = function (interceptor, options) {
@@ -226,14 +227,24 @@ function get(url, options) {
                     return [3, 4];
                 case 4:
                     afterInterceptors.forEach(function (interceptor) { return interceptor(xhrResponse); });
-                    return [2, xhrResponse];
+                    return [2, new Proxy(xhrResponse, {
+                            get: function (target, name) {
+                                return name === 'as'
+                                    ? function (as) {
+                                        xhrResponse[as] = xhrResponse.response;
+                                        delete xhrResponse.response;
+                                        return xhrResponse;
+                                    }
+                                    : target[name];
+                            }
+                        })];
             }
         });
     });
 }
 function requestFor(method) {
     var _this = this;
-    return function (url, options) {
+    return proxymise(function (url, options) {
         if (options === void 0) { options = {}; }
         return __awaiter(_this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -241,7 +252,7 @@ function requestFor(method) {
                 return [2, get(url, options)];
             });
         });
-    };
+    });
 }
 exports.requestFor = requestFor;
 function abort(group) {
@@ -257,7 +268,7 @@ function abort(group) {
     }
 }
 var xhr = {
-    get: get,
+    get: requestFor('GET'),
     post: requestFor('POST'),
     put: requestFor('PUT'),
     delete: requestFor('DELETE'),
@@ -285,4 +296,4 @@ Object.keys(xhr).forEach(function (key) {
 exports.default = xhr;
 //# sourceMappingURL=xhr-async.js.map
 
-if (typeof(window) === 'undefined') { xhr.defaults.headers.common['User-Agent'] = 'xhr-async/1.4.1' }
+if (typeof(window) === 'undefined') { xhr.defaults.headers.common['User-Agent'] = 'xhr-async/1.4.2' }
