@@ -22,12 +22,12 @@ import xhr from 'xhr-async'
 
 ```javascript
 const {
-	status,
-	statusText,
-	error,
-	headers,
-	response,
-	request
+  status,
+  statusText,
+  error,
+  headers,
+  response,
+  request
 } = await xhr.[get | post | delete | head | options | trace](url, options)
 ```
 
@@ -62,7 +62,15 @@ const { response, status } = await xhr.get('https://httpbin.org/ip')
 #### POST
 
 ```javascript
-const { response, status } = await xhr.post('https://httpbin.org/post', { data: { name: 'xhr-async', timestamp: new Date() } })
+const {
+  response,
+  status
+} = await xhr.post('https://httpbin.org/post', {
+  data: {
+    name: 'xhr-async',
+    timestamp: new Date()
+  }
+})
 ```
 
 ### before/after hooks
