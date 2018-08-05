@@ -1,4 +1,4 @@
-Modern await/async HTTP client library built on top of (axios)[https://github.com/axios/axios] inspired by golang's syntax.
+Modern await/async HTTP client library built on top of (axios)[https://github.com/axios/axios] and inspired by golang's syntax.
 
 ## Install
 
