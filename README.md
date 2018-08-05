@@ -51,6 +51,48 @@ const { ip } = await xhr.get('https://httpbin.org/ip').as('ip')
 
 `xhr.defaults` is exactly the same as axios' [defaults](https://github.com/axios/axios#config-defaults). It is used to configure global configuration.
 
+### xhr.abort
+
+xhr-async supports request cancellation. You can abort an ongoing request, or abort a group of requests.
+
+#### Abort a single request
+
+```javascript
+let xhrReq
+
+const { status } = await xhr.get('https://httpbin.org/delay/2', {
+  ref: req => xhrReq = req
+})
+
+// At some place when you want to abort a request
+xhrReq.abort()
+```
+
+#### Abort a group of requests
+
+Assume you made two requests to some endpoints, at some point you want to abort all ongoing requests of those endpoints. First you need to pass the same group name to the requests, then call `xhr.abort(GROUP_NAME)`.
+
+```javascript
+let requestGroup = 'myRequestGroup'
+
+const { status } = await xhr.get('https://httpbin.org/delay/2', {
+  group: requestGroup
+})
+
+const { status } = await xhr.get('https://httpbin.org/headers', {
+  group: requestGroup
+})
+
+// At some place when you want to abort all requests that belong to `requestGroup` group:
+xhrReq.abort(requestGroup)
+```
+
+If you want to abort ALL ongoing request being made by xhr-async, you can call `xhr.abort()` without any parameters.
+
+```javascript
+xhr.abort()
+```
+
 ### Examples
 
 #### GET
