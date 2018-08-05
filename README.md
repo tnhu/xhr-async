@@ -21,7 +21,14 @@ import xhr from 'xhr-async'
 ## API
 
 ```javascript
-const { status, statusText, error, headers, response, request } = await xhr.[get|post|delete|head|options|trace](url, options)
+const {
+	status,
+	statusText,
+	error,
+	headers,
+	response,
+	request
+} = await xhr.[get | post | delete | head | options | trace](url, options)
 ```
 
 Most of the time, you'd probably need `status`, `error`, and `response` back from a request.
