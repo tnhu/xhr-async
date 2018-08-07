@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var axios_1 = require("axios");
-var proxymise = require("proxymise");
+var proxymise_1 = require("./proxymise");
 var beforeInterceptors = [];
 var afterInterceptors = [];
 var before = function (interceptor, options) {
@@ -128,7 +128,7 @@ function cleanupRetry(retry, ignoreCounter) {
         delete retryAfter.cancelRetry;
     }
 }
-function get(url, options) {
+function ajax(url, options, extra) {
     if (options === void 0) { options = {}; }
     return __awaiter(this, void 0, void 0, function () {
         var xhrResponse, _a, status, statusText, responseHeaders, responseData, config, params, data, headers, error_1, response_1, headers_1, id, request, config_1, status_1, duration, generateErrorResult_1, retryAfter_1, counter, timeoutId, delay_1;
@@ -154,7 +154,8 @@ function get(url, options) {
                         statusText: statusText,
                         response: responseData,
                         headers: responseHeaders,
-                        request: { url: url, params: params, data: data, headers: headers }
+                        request: { url: url, params: params, data: data, headers: headers },
+                        extra: extra
                     };
                     return [3, 4];
                 case 3:
@@ -184,13 +185,14 @@ function get(url, options) {
                             headers: headers_1,
                             response: response_1 && response_1.data,
                             error: error_1,
-                            request: { url: url, params: params, data: data, headers: requestHeaders }
+                            request: { url: url, params: params, data: data, headers: requestHeaders },
+                            extra: extra
                         };
                     };
                     if (options.retry) {
                         if (typeof (options.retry) === 'number' && options.retry > 0) {
                             options.retry--;
-                            return [2, get(url, options)];
+                            return [2, ajax(url, options)];
                         }
                         else {
                             retryAfter_1 = options.retry;
@@ -203,12 +205,12 @@ function get(url, options) {
                             if (delay_1 >= 0) {
                                 return [2, new Promise(function (resolve) {
                                         retryAfter_1.timeoutId = setTimeout(function () {
-                                            resolve(get(url, options));
+                                            resolve(ajax(url, options));
                                             cleanupRetry(retryAfter_1, false);
                                         }, delay_1);
                                         retryAfter_1.retryImmediately = function () {
                                             clearTimeout(retryAfter_1.timeoutId);
-                                            resolve(get(url, options));
+                                            resolve(ajax(url, options));
                                             cleanupRetry(retryAfter_1, false);
                                         };
                                         retryAfter_1.cancelRetry = function () {
@@ -224,6 +226,7 @@ function get(url, options) {
                         }
                     }
                     xhrResponse = generateErrorResult_1();
+                    xhrResponse.extra = extra;
                     return [3, 4];
                 case 4:
                     afterInterceptors.forEach(function (interceptor) { return interceptor(xhrResponse); });
@@ -244,12 +247,12 @@ function get(url, options) {
 }
 function requestFor(method) {
     var _this = this;
-    return proxymise(function (url, options) {
+    return proxymise_1.default(function (url, options, extra) {
         if (options === void 0) { options = {}; }
         return __awaiter(_this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 options.method = method;
-                return [2, get(url, options)];
+                return [2, ajax(url, options, extra)];
             });
         });
     });
@@ -296,4 +299,4 @@ Object.keys(xhr).forEach(function (key) {
 exports.default = xhr;
 //# sourceMappingURL=xhr-async.js.map
 
-if (typeof(window) === 'undefined') { xhr.defaults.headers.common['User-Agent'] = 'xhr-async/1.4.2' }
+if (typeof(window) === 'undefined') { xhr.defaults.headers.common['User-Agent'] = 'xhr-async/1.4.6' }

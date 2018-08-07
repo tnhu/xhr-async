@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosInterceptorManager, AxiosResponse, AxiosPromise } from 'axios'
-import * as proxymise from 'proxymise'
+import proxymise from './proxymise'
 
-/**
+/*
  * Key-Value object type.
  */
 export interface KVO<T = any> {
@@ -245,7 +245,7 @@ declare global {
   }
 }
 
-async function get(url: string, options: XhrOptions = {}): Promise<XhrResponse> {
+async function ajax(url: string, options: XhrOptions = {}, extra?: KVO): Promise<XhrResponse> {
   let xhrResponse: XhrResponse
 
   // add extra id property to track back to config when exception occurs
@@ -267,7 +267,8 @@ async function get(url: string, options: XhrOptions = {}): Promise<XhrResponse> 
       statusText,
       response: responseData,
       headers: responseHeaders,
-      request: { url, params, data, headers }
+      request: { url, params, data, headers },
+      extra
     }
   } catch (error) {
     const { response } = error
@@ -301,14 +302,15 @@ async function get(url: string, options: XhrOptions = {}): Promise<XhrResponse> 
         headers,
         response: response && response.data,
         error,
-        request: { url, params, data, headers: requestHeaders }
+        request: { url, params, data, headers: requestHeaders },
+        extra
       }
     }
 
     if (options.retry) {
       if (typeof(options.retry) === 'number' && options.retry > 0) {
         options.retry--
-        return get(url, options)
+        return ajax(url, options)
       } else {
         // trick to add extra counter and timeoutId into retryAfter
         const retryAfter = (options.retry as XhrRetryAfter & KVO)
@@ -324,13 +326,13 @@ async function get(url: string, options: XhrOptions = {}): Promise<XhrResponse> 
         if (delay >= 0) {
           return new Promise<XhrResponse>(resolve => {
             retryAfter.timeoutId = setTimeout(() => {
-              resolve(get(url, options))
+              resolve(ajax(url, options))
               cleanupRetry(retryAfter, false)
             }, delay)
 
             retryAfter.retryImmediately = () => {
               clearTimeout(retryAfter.timeoutId)
-              resolve(get(url, options))
+              resolve(ajax(url, options))
               cleanupRetry(retryAfter, false)
             }
 
@@ -347,6 +349,7 @@ async function get(url: string, options: XhrOptions = {}): Promise<XhrResponse> 
     }
 
     xhrResponse = generateErrorResult()
+    xhrResponse.extra = extra
   }
 
   afterInterceptors.forEach(interceptor => interceptor(xhrResponse))
@@ -365,9 +368,9 @@ async function get(url: string, options: XhrOptions = {}): Promise<XhrResponse> 
 }
 
 export function requestFor(method: string) {
-  return proxymise(async (url: string, options: XhrOptions = {}): Promise<XhrResponse> => {
+  return proxymise(async (url: string, options: XhrOptions = {}, extra: KVO): Promise<XhrResponse> => {
     options.method = method
-    return get(url, options)
+    return ajax(url, options, extra)
   })
 }
 

@@ -47,9 +47,23 @@ You can do:
 const { ip } = await xhr.get('https://httpbin.org/ip').as('ip')
 ```
 
+To make it easier to handle network connectivity, xhr-async provides three special statuses `UNREACHABLE`, `ABORTED`, and `TIMEOUT`:
+
+```javascript
+const { status } = await xhr.get('https://httpbin.org/ip')
+
+if (status === xhr.UNREACHABLE) {
+  // server is unreachable
+} else if (status === xhr.ABORTED) {
+  // request is aborted by xhr.abort()
+} else if (status === xhr.TIMEOUT) {
+  // request is timeout
+}
+```
+
 ### xhr.defaults
 
-`xhr.defaults` is exactly the same as axios' [defaults](https://github.com/axios/axios#config-defaults). It is used to configure global configuration.
+`xhr.defaults` is used to configure global configuration. It is exactly the same as axios' [defaults](https://github.com/axios/axios#config-defaults) except that axios' `transformRequest` and `transformResponse` are currently not supported.
 
 ### xhr.abort
 
@@ -132,6 +146,14 @@ xhr.after(({ status, statusText, headers, response, error, request }) => {
   }
 })
 ```
+
+### Retry (TBD)
+
+#### retry: number (TBD)
+#### retry: function (TBD)
+#### ref.retryImmediately (TBD)
+
+### Best Practices (TBD)
 
 ### License
 

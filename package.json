@@ -1,11 +1,11 @@
 {
   "name": "xhr-async",
-  "version": "1.4.2",
+  "version": "1.4.6",
   "description": "Async/await ajax APIs with golang-like error handling, built on top of axios",
   "main": "dist/xhr-async.js",
   "types": "dist/xhr-async.d.ts",
   "scripts": {
-    "build": "npm run clean && tsc src/xhr-async.ts --outDir ./dist --sourceMap --target ES5 --lib ES2015 --declaration --removeComments && bash script/version.sh",
+    "build": "npm run clean && tsc src/*.ts --outDir ./dist --sourceMap --target ES5 --lib ES2015 --declaration --removeComments && bash script/version.sh",
     "dev": "tsc",
     "clean": "rm -rf ./build ./dist",
     "test": "npm run dev && ava --verbose build/*.spec.js",
@@ -16,15 +16,14 @@
   "author": "Tan Nhu",
   "license": "MIT",
   "dependencies": {
+    "@types/node": "^10.5.7",
     "axios": "^0.16.2",
-    "proxymise": "^1.0.2"
+    "prettier": "^1.14.0",
+    "tslint": "^5.11.0"
   },
   "devDependencies": {
-    "@types/node": "latest",
     "ava": "^0.22.0",
     "chokidar-cli": "latest",
-    "prettier": "^1.6.1",
-    "tslint": "^5.7.0",
     "typescript": "latest"
   }
 }
